@@ -182,12 +182,22 @@ export function downloadAttackMap(storageUri: vscode.Uri, version: string): Prom
 /*
     Download the latest version of the MIRE ATT&CK map - just a wrapper for some repeat code
 */
+
+    function compareVersions(v1: string, v2: string): number {
+        const num1 = parseInt(v1.replace(/^v/, ''), 10);
+        const num2 = parseInt(v2.replace(/^v/, ''), 10);
+        return num1 - num2;
+    }
+
 export async function downloadLatestAttackMap(storageUri: vscode.Uri): Promise<AttackMap|undefined> {
     let result: AttackMap|undefined = undefined;
+
     try {
         const availableVersions: Array<string> = await getVersions();
         // always look for the latest tagged version
-        const version = `${availableVersions.sort()[availableVersions.length - 1]}`;
+        // Sort versions numerically instead of lexicographically
+        availableVersions.sort(compareVersions);
+        const version = availableVersions[availableVersions.length - 1];
         try {
             const downloadedData: string = await downloadAttackMap(storageUri, version);
             // and once it's cached, parse + return it
